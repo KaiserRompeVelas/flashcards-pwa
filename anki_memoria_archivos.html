@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Flashcards de Sistemas Operativos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ffffff">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      margin: 50px;
+    }
+    .card {
+      border: 2px solid #444;
+      padding: 30px;
+      border-radius: 15px;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .btn {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="question">Pregunta</h2>
+    <p id="answer" style="display:none;">Respuesta</p>
+    <button class="btn" onclick="showAnswer()">Mostrar respuesta</button>
+    <br>
+    <button class="btn" onclick="prevCard()">Anterior</button>
+    <button class="btn" onclick="nextCard()">Siguiente</button>
+  </div>
+
+  <script>
+    const flashcards = [
+      { pregunta: "¿Qué es la memoria principal (RAM)?", respuesta: "Es un recurso crítico que se utiliza para almacenar datos y ejecutar programas en una computadora." },
+      { pregunta: "¿Cuáles son las características de la jerarquía de memoria?", respuesta: "Incluye memoria caché (rápida y costosa), memoria principal (de velocidad media y costo intermedio) y almacenamiento en disco (lento y no volátil)." },
+      { pregunta: "¿Cómo se gestiona la memoria en un sistema operativo?", respuesta: "A través de un administrador de memoria que lleva un registro de las ubicaciones en uso y asigna o libera memoria según sea necesario." },
+      { pregunta: "¿Dónde se puede encontrar la memoria caché en la jerarquía de memoria?", respuesta: "En la parte superior, debido a su alta velocidad y costo." },
+      { pregunta: "¿Cuántos tipos de almacenamiento removible existen?", respuesta: "Incluye dispositivos como DVDs, memorias USB, entre otros." },
+      { pregunta: "¿Qué función cumplen los registros base y límite?", respuesta: "Asocian un espacio de direcciones a una parte específica de la memoria física, permitiendo que cada proceso tenga direcciones privadas." },
+      { pregunta: "¿Qué es un espacio de direcciones?", respuesta: "Es el conjunto de direcciones que puede utilizar un proceso para acceder a la memoria." },
+      { pregunta: "¿Cuáles son las ventajas de la segmentación?", respuesta: "Facilita la gestión de memoria al permitir que diferentes tipos de datos tengan diferentes protecciones y longitudes." },
+      { pregunta: "¿Qué es la paginación?", respuesta: "Es un método que divide la memoria en páginas de tamaño fijo, permitiendo que solo las páginas necesarias estén en memoria." },
+      { pregunta: "¿Cómo se determina qué página eliminar en caso de un fallo de página?", respuesta: "A través de algoritmos de reemplazo de páginas, como FIFO, LRU, y el óptimo." },
+      { pregunta: "¿Dónde se almacenan las tablas de páginas?", respuesta: "En la memoria física y se utilizan para traducir direcciones virtuales a físicas." },
+      { pregunta: "¿Cuántas entradas suelen tener las tablas de páginas en un sistema típico?", respuesta: "Varía, pero puede tener miles de entradas, dependiendo del tamaño de la memoria y las páginas." },
+      { pregunta: "¿Qué es el algoritmo óptimo de reemplazo de páginas?", respuesta: "Es un método que elimina la página que no se utilizará por más tiempo, aunque es teóricamente imposible de implementar." },
+      { pregunta: "¿Qué problemas resuelve el uso de un TLB (Translation Lookaside Buffer)?", respuesta: "Acelera la traducción de direcciones virtuales a físicas al almacenar las combinaciones más recientes." },
+      { pregunta: "¿Cómo se maneja la fragmentación en la memoria?", respuesta: "A través de la compactación, que reorganiza la memoria para eliminar huecos y permitir una mejor utilización." },
+      { pregunta: "¿Qué es la memoria virtual?", respuesta: "Es una técnica que permite que los programas se ejecuten incluso si no caben completamente en la memoria física." },
+      { pregunta: "¿Cuáles son las características de la memoria virtual?", respuesta: "Permite la ejecución de programas grandes, proporciona espacios de direcciones lógicos y mejora la eficiencia en la gestión de memoria." },
+      { pregunta: "¿Cuáles son las ventajas de la paginación sobre los sobrepuestos?", respuesta: "Elimina la necesidad de que el programador divida manualmente los programas en partes, ya que el sistema gestiona las páginas automáticamente." },
+      { pregunta: "¿Qué es el intercambio (swapping) en el contexto de la memoria?", respuesta: "Es una técnica que mueve procesos completos entre la memoria y el disco para gestionar la escasez de memoria." },
+      { pregunta: "¿Cómo se implementa la protección en la memoria segmentada?", respuesta: "Cada segmento puede tener distintos bits de protección, permitiendo controlar el acceso a segmentos de código y datos de forma independiente." },
+      { pregunta: "¿Qué es un sistema de archivos?", respuesta: "Una forma de organizar y almacenar datos en un dispositivo de almacenamiento." },
+      { pregunta: "¿Cuáles son los tres requisitos esenciales para el almacenamiento a largo plazo?", respuesta: "Almacenar grandes cantidades de información, asegurar que la información sobreviva a la terminación del proceso, y permitir el acceso concurrente de múltiples procesos." },
+      { pregunta: "¿Qué operaciones básicas se pueden realizar en un disco?", respuesta: "Leer el bloque k y escribir el bloque k." },
+      { pregunta: "¿Qué es un archivo?", respuesta: "Una unidad lógica de información creada por procesos, que se almacena en un sistema de archivos." },
+      { pregunta: "¿Cómo se denomina la parte del sistema operativo que gestiona los archivos?", respuesta: "Sistema de archivos." },
+      { pregunta: "¿Qué es la nomenclatura de archivos?", respuesta: "Es el conjunto de reglas que definen cómo se nombran los archivos en un sistema operativo." },
+      { pregunta: "¿Cuáles son las características de los archivos ASCII?", respuesta: "Consisten en líneas de texto y son fácilmente legibles y editables." },
+      { pregunta: "¿Qué son los atributos de un archivo?", respuesta: "Son metadatos que describen propiedades del archivo, como el propietario, permisos y fechas de creación/modificación." },
+      { pregunta: "¿Qué función tiene la operación Create en el contexto de archivos?", respuesta: "Crea un nuevo archivo y establece sus atributos." },
+      { pregunta: "¿Qué es un directorio en un sistema de archivos?", respuesta: "Una estructura que contiene referencias a otros archivos y directorios, organizando así el sistema de archivos." },
+      { pregunta: "¿Qué es una entrada de directorio?", respuesta: "Es la representación de un archivo o subdirectorio dentro de un directorio, que incluye su nombre y la referencia a su nodo-i." },
+      { pregunta: "¿Qué significa acceder a un archivo de manera secuencial?", respuesta: "Leer los datos en el orden en que están almacenados, desde el inicio hasta el final." },
+      { pregunta: "¿Qué es un bloque de datos en un disco?", respuesta: "Es la unidad básica de almacenamiento de información en un disco, que puede ser leída o escrita." },
+      { pregunta: "¿Qué es un nodo-i en un sistema de archivos UNIX?", respuesta: "Es una estructura de datos que contiene información sobre un archivo, incluyendo su ubicación en el disco y atributos." },
+      { pregunta: "¿Cuál es la diferencia entre un vínculo duro y un vínculo simbólico?", respuesta: "Un vínculo duro apunta directamente al nodo-i de un archivo, mientras que un vínculo simbólico es un puntero a la ruta del archivo." },
+      { pregunta: "¿Qué es la desfragmentación de discos?", respuesta: "Es el proceso de reorganizar los datos en el disco para que los archivos sean contiguos y se reduzca el tiempo de acceso." },
+      { pregunta: "¿Qué es un sistema de archivos por bitácora?", respuesta: "Es un sistema que registra todas las operaciones antes de realizarlas, permitiendo la recuperación en caso de fallo." },
+      { pregunta: "¿Qué es un mapa de bits en el contexto de un sistema de archivos?", respuesta: "Es un método para llevar registro de los bloques libres y ocupados en un disco, donde cada bit representa un bloque." },
+      { pregunta: "¿Cuáles son las ventajas de utilizar un sistema de archivos de tipo FAT?", respuesta: "Simplicidad en la implementación y amplia compatibilidad con diferentes sistemas operativos." },
+      { pregunta: "¿Qué es la lectura adelantada de bloque?", respuesta: "Es una técnica que intenta cargar bloques en la caché antes de que sean necesarios, mejorando así la velocidad de acceso." }
+    ];
+
+    let current = 0;
+
+    function showCard() {
+      document.getElementById("question").textContent = flashcards[current].pregunta;
+      document.getElementById("answer").textContent = flashcards[current].respuesta;
+      document.getElementById("answer").style.display = "none";
+    }
+
+    function showAnswer() {
+      document.getElementById("answer").style.display = "block";
+    }
+
+    function nextCard() {
+      current = (current + 1) % flashcards.length;
+      showCard();
+    }
+
+    function prevCard() {
+      current = (current - 1 + flashcards.length) % flashcards.length;
+      showCard();
+    }
+
+    showCard();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registrado ✔️'))
+        .catch(err => console.error('Error al registrar SW:', err));
+    }
+  </script>
+</body>
+</html>
